@@ -1,28 +1,36 @@
 import numpy as np
-from tqdm import tqdm_notebook
+from tqdm import tqdm
 
-class ELMO_tokenizer(object):
-    """Bert tokenizer for raw text"""
 
-    def __init__(self,
-               max_seq_length = 256,
-                PAD_WORD = '--PAD--'
-               ):
-        
-        
-        self.PAD_WORD = PAD_WORD
+class ElmoTokenizer(object):
+    """
+    Bert tokenizer for raw text
+    """
+    def __init__(self, max_seq_length=256, pad_word='--PAD--'):
+        self.pad_word = pad_word
         self.max_seq_length = max_seq_length
-    
-    def predict(self, texts):
 
-        split_texts = list(map(lambda x: np.array(x.split())[:self.max_seq_length], texts))
-        
-        def pad_sequence(sequence):
-            return np.concatenate([sequence, np.array([self.PAD_WORD for i in range(self.max_seq_length - len(sequence))])])
-        
-        tokens = []
-        for text in tqdm_notebook(split_texts, desc="Converting examples to tokens"):
-            
-            tokens.append(pad_sequence(text))
-      
+    def _pad_sequence(self, sequence):
+        padding_length = max(self.max_seq_length - len(sequence), 0)
+        padding = np.array([self.pad_word] * padding_length)
+        padded = np.concatenate([sequence, padding])
+        return padded[:self.max_seq_length]
+
+    def _split_text(self, text):
+        return np.array(text.split())[:self.max_seq_length]
+
+    def predict(self, texts, verbose=False):
+        """
+        Parse texts for ELMO
+        :param texts: texts
+        :type texts: list[str]
+        :param verbose: Verbose building process?
+        :type verbose: bool
+        """
+        if verbose:
+            iterable = tqdm(texts, desc="Converting examples to tokens")
+        else:
+            iterable = texts
+        tokens = [self._pad_sequence(self._split_text(text))
+                  for text in iterable]
         return np.vstack(tokens)
