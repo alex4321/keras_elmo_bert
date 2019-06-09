@@ -50,6 +50,15 @@ class BertLayer(Layer):
             name="{}_module".format(self.name)
         )
 
+    def get_config(self):
+        config = super(BertLayer, self).get_config()
+        config['n_fine_tune_layers'] = self.n_fine_tune_layers
+        config['trainable'] = self.is_trainable
+        config['output_size'] = self.output_size
+        config['tf_hub'] = self.tf_hub
+        config['output_representation'] = self.output_representation
+        return config
+
     def build(self, input_shape):
         variables = list(self.bert.variable_map.values())
         if self.is_trainable:

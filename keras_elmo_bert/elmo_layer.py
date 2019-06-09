@@ -47,6 +47,13 @@ class ElmoLayer(Layer):
         self.elmo = hub.Module(self.tf_hub, trainable=self.is_trainable,
                                name="{}_module".format(self.name))
 
+    def get_config(self):
+        config = super(ElmoLayer, self).get_config()
+        config['tf_hub'] = self.tf_hub
+        config['output_representation'] = self.output_representation
+        config['pad_word'] = self.pad_word
+        return config
+
     def build(self, input_shape):
         variables = list(self.elmo.variable_map.values())
         if self.is_trainable:
