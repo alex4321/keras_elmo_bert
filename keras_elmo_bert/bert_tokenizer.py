@@ -262,7 +262,7 @@ def convert_text_to_examples(texts, labels):
     """
     Create InputExamples from texts & labels (for 1-text superwised case)
     :param texts: list of texts
-    :type texts: list[str]
+    :type texts: list[str]|list[(str, str)]
     :param labels: list of labels
     :type labels: list[str]
     :return: list of InputExample instances
@@ -271,7 +271,10 @@ def convert_text_to_examples(texts, labels):
     assert len(texts) == len(labels)
     input_examples = []
     for text, label in zip(texts, labels):
-        assert isinstance(text, str)  # TODO: How can other options be possible?
+        if isinstance(text, str):
+            input_examples.append(InputExample(guid=None, text_a=text, label=label))
+        else:
+            input_examples.append(InputExample(guid=None, text_a=text[0], text_b=text[1], label=label))
         input_examples.append(InputExample(guid=None, text_a=text[0], text_b=text[1], label=label))
     return input_examples
 
