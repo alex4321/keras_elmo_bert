@@ -1,7 +1,9 @@
-tensorflow-gpu>=1.*
+tensorflow>=1.*
 tensorflow-hub
 tqdm>=4.*
-keras-gpu>=2.2.*
+keras>=2.2.*
 numpy>=1.*
 # BERT-related dependencies
 bert-tensorflow
+# Sample dependencies
+pandas
