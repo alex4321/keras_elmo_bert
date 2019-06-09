@@ -15,4 +15,5 @@ def masked_reduce_mean(input, mask):
     masked_sum = lambda x, m: tf.reduce_sum(mul_mask(x, m), axis=1)
     mask_element_count = lambda m: tf.reduce_sum(m, axis=1, keepdims=True)
     masked_reduce_mean = lambda x, m: masked_sum(x, m) / (mask_element_count(m) + 1e-10)
-    return masked_reduce_mean(input, mask)
+    return masked_reduce_mean(tf.cast(input, tf.float32),
+                              tf.cast(mask, tf.float32))
