@@ -1,7 +1,11 @@
+import os
 import tensorflow_hub as hub
 import tensorflow as tf
 from bert.tokenization import FullTokenizer
-from tqdm import tqdm
+if os.environ.get('TQDM_NOTEBOOK'):
+    from tqdm import tqdm_notebook as tqdm
+else:
+    from tqdm import tqdm
 from bert import tokenization
 import numpy as np
 

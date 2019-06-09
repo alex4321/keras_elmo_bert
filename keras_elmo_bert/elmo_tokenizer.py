@@ -1,5 +1,9 @@
+import os
 import numpy as np
-from tqdm import tqdm
+if os.environ.get('TQDM_NOTEBOOK'):
+    from tqdm import tqdm_notebook as tqdm
+else:
+    from tqdm import tqdm
 
 
 class ElmoTokenizer(object):
