@@ -1,0 +1,6 @@
+tensorflow==1.*
+tensorflow-hub
+tqdm==4.*
+keras>=2.2.*
+# BERT-related dependencies
+bert-tensorflow
