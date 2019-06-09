@@ -25,7 +25,10 @@ class ElmoLayer(Layer):
     if trainable = True, 4 (3 weights for sum of all layer and 1 scale) elmo aggregation params are trainable
     """
     
-    def __init__(self, trainable=False, tf_hub=None, output_representation='default', pad_word='--PAD--', **kwargs):
+    def __init__(self, trainable=False, tf_hub=None,
+                 output_representation='default', pad_word='--PAD--',
+                 tokens_input='tokens', sequence_len_input='sequence_len', elmo_output='elmo',
+                 **kwargs):
         """
         Initialize ELMO layer
         :param trainable: is trainable
@@ -36,6 +39,12 @@ class ElmoLayer(Layer):
         :type output_representation: str
         :param pad_word: ELMO's padding word
         :type pad_word: str
+        :param tokens_input: ELMO tokens input name
+        :type tokens_input: str
+        :param sequence_len_input: ELMO sequence lenght input name
+        :type sequence_len_input: int|NoneType
+        :param elmo_output: ELMO output name
+        :type elmo_output: str
         """
         super(ElmoLayer, self).__init__(**kwargs)
         self.dimensions = 512 if output_representation == 'word_emb' else 1024
@@ -44,6 +53,9 @@ class ElmoLayer(Layer):
         self.supports_masking = True
         self.tf_hub = tf_hub
         self.pad_word = pad_word
+        self.tokens_input = tokens_input
+        self.sequence_len_input = sequence_len_input
+        self.elmo_output = elmo_output
         self.elmo = hub.Module(self.tf_hub, trainable=self.is_trainable,
                                name="{}_module".format(self.name))
 
@@ -52,6 +64,9 @@ class ElmoLayer(Layer):
         config['tf_hub'] = self.tf_hub
         config['output_representation'] = self.output_representation
         config['pad_word'] = self.pad_word
+        config['tokens_input'] = self.tokens_input
+        config['sequence_len_input'] = self.sequence_len_input
+        config['elmo_output'] = self.elmo_output
         return config
 
     def build(self, input_shape):
@@ -76,17 +91,15 @@ class ElmoLayer(Layer):
         :param mask: mask tensow
         :return: ELMO embeddings tensor
         """
-        sequence_len = self.compute_token_mask(x)
-        inputs = {
-            "tokens": K.cast(x, tf.string),
-            "sequence_len": sequence_len
-        }
+        inputs = {self.tokens_input: K.cast(x, tf.string)}
+        if self.sequence_len_input:
+            inputs[self.sequence_len_input] = self.compute_token_mask(x)
         result = self.elmo(inputs,
                            as_dict=True,
                            signature='tokens')
         if self.output_representation == 'default':
             input_mask = K.cast(K.not_equal(x, self.pad_word), K.floatx())
-            return helpers.masked_reduce_mean(result['elmo'],
+            return helpers.masked_reduce_mean(result[self.elmo_output],
                                               input_mask)
         else:
             return result[self.output_representation]
