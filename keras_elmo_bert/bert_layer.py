@@ -32,6 +32,7 @@ class BertLayer(Layer):
         :type trainable: bool
         """
         assert output_representation in ["pooled_output", "mean_pooling", "sequence_output"]
+        super(BertLayer, self).__init__(**kwargs)
         self.n_fine_tune_layers = n_fine_tune_layers
         self.is_trainable = trainable
         self.output_size = 768
@@ -43,7 +44,6 @@ class BertLayer(Layer):
             trainable=self.is_trainable,
             name="{}_module".format(self.name)
         )
-        super(BertLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
         variables = list(self.bert.variable_map.values())

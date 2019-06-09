@@ -32,19 +32,19 @@ class ElmoLayer(Layer):
         :param pad_word: ELMO's padding word
         :type pad_word: str
         """
+        super(ElmoLayer, self).__init__(**kwargs)
         self.dimensions = 512 if output_representation == 'word_emb' else 1024
         self.output_representation = output_representation 
-        self.is_trainble = trainable
+        self.is_trainable = trainable
         self.supports_masking = True
         self.tf_hub = tf_hub
         self.pad_word = pad_word
-        self.elmo = hub.Module(self.tf_hub, trainable=self.trainable,
+        self.elmo = hub.Module(self.tf_hub, trainable=self.is_trainable,
                                name="{}_module".format(self.name))
-        super(ElmoLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
         variables = list(self.elmo.variable_map.values())
-        if self.is_trainble:
+        if self.is_trainable:
             trainable_vars = [var for var in variables if "/aggregation/" in var.name]
             for var in trainable_vars:
                 self._trainable_weights.append(var)
