@@ -1,6 +1,11 @@
+import os
 import tensorflow_hub as hub
-from keras import backend as K
-from keras.layers import Layer
+if os.environ.get('TF_KERAS'):
+    import tensorflow.keras.backend as K
+    from tensorflow.keras.layers import Layer
+else:
+    import keras.backend as K
+    from keras.layers import Layer
 from . import helpers
 
 
