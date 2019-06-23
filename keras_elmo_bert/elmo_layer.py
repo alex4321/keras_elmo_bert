@@ -25,7 +25,7 @@ class ElmoLayer(Layer):
     if trainable = True, 4 (3 weights for sum of all layer and 1 scale) elmo aggregation params are trainable
     """
     
-    def __init__(self, trainable=False, tf_hub=None,
+    def __init__(self, trainable=False, trainable_lstm_cells=False, tf_hub=None,
                  output_representation='default', pad_word='--PAD--',
                  tokens_input='tokens', sequence_len_input='sequence_len', elmo_output='elmo',
                  **kwargs):
@@ -50,6 +50,7 @@ class ElmoLayer(Layer):
         self.dimensions = 512 if output_representation == 'word_emb' else 1024
         self.output_representation = output_representation 
         self.is_trainable = trainable
+        self.is_trainable_lstm_cells = trainable_lstm_cells
         self.supports_masking = True
         self.tf_hub = tf_hub
         self.pad_word = pad_word
@@ -71,16 +72,21 @@ class ElmoLayer(Layer):
 
     def build(self, input_shape):
         variables = list(self.elmo.variable_map.values())
+        trainable_keywords = []
         if self.is_trainable:
-            trainable_vars = [var for var in variables if "/aggregation/" in var.name]
-            for var in trainable_vars:
-                self._trainable_weights.append(var)
-            # Add non-trainable weights
-            for var in variables:
-                if var not in self._trainable_weights:
-                    self._non_trainable_weights.append(var)
-        else:
-            for var in variables:
+            trainable_keywords.append('/aggregation/')
+        if self.is_trainable_lstm_cells:
+            trainable_keywords.append('/lstm_cell/')
+        # Add trainable weihts
+        trainable_vars = [var
+                          for var in variables
+                          if any([word in var.name
+                                  for word in trainable_keywords])]
+        for var in trainable_vars:
+            self._trainable_weights.append(var)
+        # Add non-trainable weights
+        for var in variables:
+            if var not in self._trainable_weights:
                 self._non_trainable_weights.append(var)
         super(ElmoLayer, self).build(input_shape)
 
